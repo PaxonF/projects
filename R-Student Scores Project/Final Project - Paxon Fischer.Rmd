@@ -1,0 +1,298 @@
+---
+title: "Final Project - Stat 123"
+author: "Paxon Fischer"
+date: "February 28, 2017"
+output: word_document
+classoption: landscape
+---
+
+```{r setup, include=FALSE, echo = FALSE}
+require(knitr)
+opts_knit$set(root.dir="C:/Users/paxon/Documents/data", echo = TRUE)
+```
+
+## R Markdown
+
+This document represents a Student Report with 4 sections that compare overall scores and percentages as well as their respective domain percentages and socres. It also includes an Exam Report with 3 sections that compare difficulty of exam based on question number and exam form. 
+
+```{r read in libtraries, echo = FALSE, warning = FALSE, message = FALSE}
+library(plyr)
+library(dplyr)
+
+```
+
+```{r readFormA, echo = FALSE}
+#FORM A
+FormA <- read.csv("FormA.csv", header = FALSE, stringsAsFactors = FALSE) 
+DomainsA <- read.csv("Domains FormA.csv", stringsAsFactors = FALSE)
+names(DomainsA)[4] <- c("Question")
+names(DomainsA)[3] <- c("dnumber")
+#Separate Answer Key from Form
+FormAKey <- FormA[1,]
+FormA <- FormA[-1,]
+
+#Find Scores for each student
+students <- numeric()
+students_vert <- NULL
+for (i in 1:50) {
+  for (j in 2:151) {
+    students <- as.numeric(FormA[i,j] == FormAKey[1,j])
+    students_vert <- rbind(students_vert, c(FormA[i,1], j-1, students))
+  }
+}
+colnames(students_vert) <- c("Student", "Question", "Score")
+FormA.Domains <- cbind(students_vert, DomainsA[,-4])
+FormA.Domains <- mutate(FormA.Domains, Form = "A")
+```
+
+```{r readFormB, echo = FALSE}
+#FORM B
+FormB <- read.csv("FormB.csv", header = FALSE, stringsAsFactors = FALSE) 
+DomainsB <- read.csv("Domains FormB.csv", stringsAsFactors = FALSE)
+names(DomainsB)[4] <- c("Question")
+names(DomainsB)[3] <- c("dnumber")
+#Separate Answer Key from Form
+FormBKey <- FormB[1,]
+FormB <- FormB[-1,]
+
+#Find Scores for each student
+students <- numeric()
+students_vert <- NULL
+for (i in 1:49) {
+  for (j in 2:151) {
+    students <- as.numeric(FormB[i,j] == FormBKey[1,j])
+    students_vert <- rbind(students_vert, c(FormB[i,1], j-1, students))
+  }
+}
+colnames(students_vert) <- c("Student", "Question", "Score")
+FormB.Domains <- cbind(students_vert, DomainsB[,-4])
+FormB.Domains <- mutate(FormB.Domains, Form = "B")
+```
+
+```{r readFormC, echo = FALSE}
+#FORM C
+FormC <- read.csv("FormC.csv", header = FALSE, stringsAsFactors = FALSE) 
+DomainsC <- read.csv("Domains FormC.csv", stringsAsFactors = FALSE)
+names(DomainsC)[4] <- c("Question")
+names(DomainsC)[3] <- c("dnumber")
+#Separate Answer Key from Form
+FormCKey <- FormC[51,]
+FormC <- FormC[-51,]
+
+#Find Scores for each student
+students <- numeric()
+students_vert <- NULL
+for (i in 1:50) {
+  for (j in 2:151) {
+    students <- as.numeric(FormC[i,j] == FormCKey[1,j])
+    students_vert <- rbind(students_vert, c(FormC[i,1], j-1, students))
+  }
+}
+colnames(students_vert) <- c("Student", "Question", "Score")
+FormC.Domains <- cbind(students_vert, DomainsC[,-4])
+FormC.Domains <- mutate(FormC.Domains, Form = "C")
+```
+
+```{r readFormD, echo = FALSE}
+#FORM D
+FormD <- read.csv("FormD.csv", header = FALSE, stringsAsFactors = FALSE) 
+DomainsD <- read.csv("Domains FormD.csv", stringsAsFactors = FALSE)
+names(DomainsD)[4] <- c("Question")
+names(DomainsD)[3] <- c("dnumber")
+#Separate Answer Key from Form
+FormDKey <- FormD[25,]
+FormD <- FormD[-25,]
+
+#Find Scores for each student
+students <- numeric()
+students_vert <- NULL
+for (i in 1:50) {
+  for (j in 2:151) {
+    students <- as.numeric(FormD[i,j] == FormDKey[1,j])
+    students_vert <- rbind(students_vert, c(FormD[i,1], j-1, students))
+  }
+}
+colnames(students_vert) <- c("Student", "Question", "Score")
+FormD.Domains <- cbind(students_vert, DomainsD[,-4])
+FormD.Domains <- mutate(FormD.Domains, Form = "D")
+```
+
+```{r Combine forms, echo = FALSE}
+report <- rbind(FormA.Domains, FormB.Domains, FormC.Domains, FormD.Domains)
+report$Score <- as.integer(as.character(report$Score))
+report$Student <- as.integer(as.character(report$Student))
+report$Question <- as.integer(as.character(report$Question))
+```
+
+```{r Find Overal Percentages and Scores along with their domains, echo = FALSE}
+#Overall Percentages Separated by Form
+OverallPercentageA <- aggregate(Score ~ Student, mean, data = report[report$Form == "A",])
+OverallPercentageA$Form <- rep("A", length(OverallPercentageA$Student))
+OverallPercentageB <- aggregate(Score ~ Student, mean, data = report[report$Form == "B",])
+OverallPercentageB$Form <- rep("B", length(OverallPercentageB$Student))
+OverallPercentageC <- aggregate(Score ~ Student, mean, data = report[report$Form == "C",])
+OverallPercentageC$Form <- rep("C", length(OverallPercentageC$Student))
+OverallPercentageD <- aggregate(Score ~ Student, mean, data = report[report$Form == "D",])
+OverallPercentageD$Form <- rep("D", length(OverallPercentageD$Student))
+
+#Bind togheter Overall Percentage Scores and reorder
+OverallPercentage <- as.data.frame(rbind(OverallPercentageA, OverallPercentageB, OverallPercentageC, OverallPercentageD))
+OverallPercentage <- OverallPercentage[order(OverallPercentage$Student),]
+names(OverallPercentage)[3] <- c("Form") 
+names(OverallPercentage)[2] <- c("Overall Percentage") 
+OverallPercentage <- OverallPercentage[,c(1,3,2)]
+
+#Overall Score Calculation
+OverallScore <- aggregate(Score ~ Student, sum, data = report)
+names(OverallScore)[2] <- c("Overall Score") 
+
+#Domain Percentages
+dp1 <- aggregate(Score ~ Student, mean, data = report[report$dnumber == 1,])
+names(dp1)[2] <- c("Domain Percentage 1") 
+dp2 <- aggregate(Score ~ Student, mean, data = report[report$dnumber == 2,])
+names(dp2)[2] <- c("Domain Percentage 2") 
+dp3 <- aggregate(Score ~ Student, mean, data = report[report$dnumber == 3,])
+names(dp3)[2] <- c("Domain Percentage 3") 
+dp4 <- aggregate(Score ~ Student, mean, data = report[report$dnumber == 4,])
+names(dp4)[2] <- c("Domain Percentage 4") 
+dp5 <- aggregate(Score ~ Student, mean, data = report[report$dnumber == 5,])
+names(dp5)[2] <- c("Domain Percentage 5") 
+
+#Domain Scores
+ds1 <- aggregate(Score ~ Student, sum, data = report[report$dnumber == 1,])
+names(ds1)[2] <- c("Domain Score 1") 
+ds2 <- aggregate(Score ~ Student, sum, data = report[report$dnumber == 2,])
+names(ds2)[2] <- c("Domain Score 2") 
+ds3 <- aggregate(Score ~ Student, sum, data = report[report$dnumber == 3,])
+names(ds3)[2] <- c("Domain Score 3") 
+ds4 <- aggregate(Score ~ Student, sum, data = report[report$dnumber == 4,])
+names(ds4)[2] <- c("Domain Score 4") 
+ds5 <- aggregate(Score ~ Student, sum, data = report[report$dnumber == 5,])
+names(ds5)[2] <- c("Domain Score 5") 
+```
+
+```{r Student Report Section 1, echo = FALSE}
+studentreport1 <- cbind(OverallPercentage, OverallScore, ds1, ds2, ds3, ds4, ds5, dp1, dp2, dp3, dp4, dp5)
+studentreport1 <- studentreport1[,-c(4,6,8,10,12,14,16,18,20,22,24)]
+```
+
+## Student Report
+### Section 1
+
+```{r Print Student Report Section 1}
+studentreport1
+```
+
+
+```{r Student Report Section 2, echo = FALSE}
+studentreport2 <- cbind(OverallScore, OverallPercentage, dp1, dp2, dp3, dp4, dp5, ds1, ds2, ds3, ds4, ds5)
+studentreport2 <- studentreport2[,-c(3,6,8,10,12,14,16,18,20,22,24)]
+studentreport2 <- studentreport2[,c(1,3,4,2,5:14)]
+studentreport2 <- studentreport2[order(studentreport2$`Overall Percentage`),]
+```
+
+## Student Report
+# Section 2
+
+```{r Print Student Report Section 2}
+studentreport2
+```
+
+## Student Report
+### Section 3
+
+```{r Student Report Section 3, echo = FALSE}
+boxplot(studentreport1$`Domain Percentage 1`,
+        studentreport1$`Domain Percentage 2`,
+        studentreport1$`Domain Percentage 3`,
+        studentreport1$`Domain Percentage 4`,
+        studentreport1$`Domain Percentage 5`,
+        col = c(2:6), main="Overall Percentage of each Domain", 
+  	xlab="Domain Number", ylab="Percentage")
+axis(1, at = c(1:5), labels = c("1", "2", "3", "4", "5"))
+```
+
+## Student Report
+### Section 4
+
+```{r Student Report Section 4, echo = FALSE}
+boxplot(studentreport1$`Domain Percentage 1`[studentreport1$Form == "A"],
+        studentreport1$`Domain Percentage 2`[studentreport1$Form == "A"],
+        studentreport1$`Domain Percentage 3`[studentreport1$Form == "A"],
+        studentreport1$`Domain Percentage 4`[studentreport1$Form == "A"],
+        studentreport1$`Domain Percentage 5`[studentreport1$Form == "A"],
+        studentreport1$`Domain Percentage 1`[studentreport1$Form == "B"],
+        studentreport1$`Domain Percentage 2`[studentreport1$Form == "B"],
+        studentreport1$`Domain Percentage 3`[studentreport1$Form == "B"],
+        studentreport1$`Domain Percentage 4`[studentreport1$Form == "B"],
+        studentreport1$`Domain Percentage 5`[studentreport1$Form == "B"],
+        studentreport1$`Domain Percentage 1`[studentreport1$Form == "C"],
+        studentreport1$`Domain Percentage 2`[studentreport1$Form == "C"],
+        studentreport1$`Domain Percentage 3`[studentreport1$Form == "C"],
+        studentreport1$`Domain Percentage 4`[studentreport1$Form == "C"],
+        studentreport1$`Domain Percentage 5`[studentreport1$Form == "C"],
+        studentreport1$`Domain Percentage 1`[studentreport1$Form == "D"],
+        studentreport1$`Domain Percentage 2`[studentreport1$Form == "D"],
+        studentreport1$`Domain Percentage 3`[studentreport1$Form == "D"],
+        studentreport1$`Domain Percentage 4`[studentreport1$Form == "D"],
+        studentreport1$`Domain Percentage 5`[studentreport1$Form == "D"],main="Domain Percentage of each Form", 
+  	    xlab="Domain Number and Exam Form", ylab="Domain Percentage"
+)
+axis(1, at = c(1:20), labels = c("1A", "2A", "3A", "4A", "5A",
+                                 "1B", "2B", "3B", "4B", "5B",
+                                 "1C", "2C", "3C", "4C", "5C",
+                                 "1D", "2D", "3D", "4D", "5D"),  cex.axis = .5)
+```
+
+```{r Exam Report Overall Percentages, echo = FALSE}
+#Get Overall Percentages for each Form
+ExamOP.A <- aggregate(Score ~ Question, mean, data = report[report$Form == "A",])
+ExamOP.A$Form <- rep("A", length(ExamOP.A$Question))
+ExamOP.B <- aggregate(Score ~ Question, mean, data = report[report$Form == "B",])
+ExamOP.B$Form <- rep("B", length(ExamOP.B$Question))
+ExamOP.C <- aggregate(Score ~ Question, mean, data = report[report$Form == "C",])
+ExamOP.C$Form <- rep("C", length(ExamOP.C$Question))
+ExamOP.D <- aggregate(Score ~ Question, mean, data = report[report$Form == "D",])
+ExamOP.D$Form <- rep("D", length(ExamOP.D$Question))
+
+#Combine Exam Overal Percentages into one data frame and sort
+ExamOP <- as.data.frame(rbind(ExamOP.A, ExamOP.B, ExamOP.C, ExamOP.D))
+```
+
+```{r Exam Report Section 1, echo = FALSE}
+ExamReport1 <- ExamOP[,c(3,1,2)]
+names(ExamReport1)[3] <- c("Overall Percentage")
+```
+
+## Exam Report
+### Section 1
+
+```{r Print Exam Report Section 1}
+ExamReport1
+```
+
+```{r Exam Report Section 2, echo = FALSE}
+ExamReport2 <- ExamOP[order(ExamOP$Score),]
+ExamReport2 <- ExamReport2[,c(2,3,1)]
+names(ExamReport2)[1] <- c("Overall Percentage")
+```
+
+## Exam Report
+### Section 2
+
+```{r Print Exam Report Section 2}
+ExamReport2
+```
+
+## Exam Report
+### Section 3
+
+```{r Exam Report Section 3, echo = FALSE}
+boxplot(ExamReport1$`Overall Percentage`[ExamReport1$Form == "A"],
+        ExamReport1$`Overall Percentage`[ExamReport1$Form == "B"],
+        ExamReport1$`Overall Percentage`[ExamReport1$Form == "C"],
+        ExamReport1$`Overall Percentage`[ExamReport1$Form == "D"],
+        col = c(2:6), main="Overall Percentage of each Form", 
+  	xlab="Exam Form", ylab="Overall Percentage")
+axis(1, at = c(1,2,3,4), labels = c("A", "B", "C", "D"))
+```
