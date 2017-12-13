@@ -1,0 +1,5 @@
+SELECT ds.date_completed, ds.call_type, ds.call_outcome, ds.call_length, rl.region, u.name,  u.is_sales, u.active, rl.business_level
+
+FROM db_salescalls ds
+    LEFT JOIN users u ON ds.user_id = u.isUID
+    LEFT JOIN reporting_leads rl ON ds.contact_id = rl.contact_id

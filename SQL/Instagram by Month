@@ -1,0 +1,33 @@
+SELECT r1.date, r1.followers_count, r1.followers_count-r2.followers_count AS netGain
+FROM
+    report1 r1, report1 r2,
+    (SELECT t2.date AS date1, MAX(t1.date) AS date2 
+    FROM report1 t1, report1 t2
+    WHERE t1.date < t2.date
+    GROUP BY t2.date) AS prev
+WHERE r1.date=prev.date1
+    AND r2.date=prev.date2
+    AND r1.date>=DATE('now','-30 days')
+
+
+##
+SELECT *, max(`date`), 
+
+(SELECT `followers_count`
+
+FROM report
+ 
+WHERE 
+
+GROUP BY STRFTIME('%m',`date`)) AS TEST
+
+FROM report
+
+GROUP BY STRFTIME('%m',`date`)
+
+##
+SELECT *, max(`date`)
+
+FROM report
+
+GROUP BY STRFTIME('%m',`date`)

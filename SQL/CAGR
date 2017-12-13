@@ -1,0 +1,6 @@
+SELECT EndDate, `Total Delivery Revenue`, 
+POWER((LAST(`Total Delivery Revenue`)/FIRST(`Total Delivery Revenue`), 1.0/COUNT(`Total Delivery Revenue`)) - 1.0 as CAGR
+
+FROM report1 
+
+WHERE EndDate >= date('now','start of year');
